@@ -103,7 +103,11 @@ public partial class App : Application
         _actionRegistry.Register(new KeyboardShortcutAction());
         _actionRegistry.Register(new OpenFileAction());
         _actionRegistry.Register(new TextAction());
-        _actionRegistry.Register(new MacroAction());
+
+        var macro = new MacroAction();
+        MacroAction.Initialize(_actionRegistry);
+        _actionRegistry.Register(macro);
+
         _actionRegistry.Register(new PlaySoundAction());
     }
 

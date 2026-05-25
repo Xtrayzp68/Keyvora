@@ -10,6 +10,10 @@ public sealed class MacroAction : ActionBase
     public override string DisplayName => "Macro";
     public override string Description => "Execute a sequence of actions";
 
+    private static ActionRegistry? _registry;
+
+    public static void Initialize(ActionRegistry registry) => _registry = registry;
+
     public MacroAction()
     {
         Config = new MacroConfig();
@@ -20,15 +24,26 @@ public sealed class MacroAction : ActionBase
         if (Config is not MacroConfig cfg || cfg.Steps.Count == 0)
             return;
 
-        foreach (var step in cfg.Steps)
+        int loopCount = cfg.Loop ? cfg.LoopCount : 1;
+        for (int l = 0; l < loopCount; l++)
         {
-            if (context.CancellationToken.IsCancellationRequested) break;
-            if (step.DelayMs > 0)
-                await Task.Delay(step.DelayMs, context.CancellationToken);
+            foreach (var step in cfg.Steps)
+            {
+                if (context.CancellationToken.IsCancellationRequested) break;
+                if (step.DelayMs > 0)
+                    await Task.Delay(step.DelayMs, context.CancellationToken);
 
-            // Each macro step executes via the action registry at runtime
-            // This is resolved by the action executor - macro stores references by type ID
-            await Task.CompletedTask;
+                var action = _registry?.Get(step.ActionTypeId);
+                if (action == null) continue;
+
+                if (step.ConfigJson != null && action.Config != null)
+                {
+                    action.Config.Deserialize(step.ConfigJson);
+                }
+
+                await action.ExecuteAsync(context);
+            }
+            if (context.CancellationToken.IsCancellationRequested) break;
         }
     }
 }

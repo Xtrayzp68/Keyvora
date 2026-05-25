@@ -96,7 +96,6 @@ dotnet run --project Keyvora.Desktop
 - [ ] OLED display support
 - [ ] Rotary encoder support
 - [ ] Pages/folders
-- [ ] OBS Studio integration
 
 ### v2.0
 - [ ] Game integrations

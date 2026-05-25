@@ -23,6 +23,10 @@ public sealed class TextAction : ActionBase
         await Task.Run(() =>
         {
             KeyboardSimulator.TypeText(cfg.Text);
+            if (cfg.PressEnter)
+            {
+                KeyboardSimulator.SendKey(System.Windows.Input.Key.Enter);
+            }
         }, context.CancellationToken);
     }
 }

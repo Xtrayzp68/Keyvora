@@ -245,7 +245,32 @@ public sealed class StreamlabsService : IDisposable
         }
 
         if (!ct.IsCancellationRequested)
-            _ = DisconnectAsync();
+        {
+            await DisconnectAsync();
+            _ = AutoReconnectAsync();
+        }
+    }
+
+    private async Task AutoReconnectAsync()
+    {
+        int delay = 1;
+        while (!_cts!.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(delay), _cts.Token);
+                System.Diagnostics.Debug.WriteLine($"[Streamlabs] Reconnecting...");
+                await ConnectAsync();
+                System.Diagnostics.Debug.WriteLine($"[Streamlabs] Reconnected successfully");
+                return;
+            }
+            catch (OperationCanceledException) { return; }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Streamlabs] Reconnect failed: {ex.Message}");
+                delay = Math.Min(delay * 2, 30);
+            }
+        }
     }
 
     private void HandleResponse(int id, JObject msg)

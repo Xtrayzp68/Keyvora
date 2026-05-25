@@ -210,7 +210,32 @@ public sealed class DiscordService : IDisposable
         }
 
         if (!_cts!.IsCancellationRequested)
-            _ = DisconnectAsync();
+        {
+            await DisconnectAsync();
+            _ = AutoReconnectAsync();
+        }
+    }
+
+    private async Task AutoReconnectAsync()
+    {
+        int delay = 1;
+        while (!_cts!.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(delay), _cts.Token);
+                System.Diagnostics.Debug.WriteLine($"[Discord] Reconnecting...");
+                await ConnectAsync();
+                System.Diagnostics.Debug.WriteLine($"[Discord] Reconnected successfully");
+                return;
+            }
+            catch (OperationCanceledException) { return; }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Discord] Reconnect failed: {ex.Message}");
+                delay = Math.Min(delay * 2, 30);
+            }
+        }
     }
 
     private void HandleDispatch(JObject msg)
