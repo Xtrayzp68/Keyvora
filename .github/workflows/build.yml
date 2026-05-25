@@ -1,0 +1,66 @@
+name: Build Keyvora
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore src\Keyvora\Keyvora.sln
+
+      - name: Build Release
+        run: dotnet build src\Keyvora\Keyvora.sln -c Release --no-restore
+
+      - name: Run tests
+        run: dotnet test tests\Keyvora.Desktop.Tests\Keyvora.Desktop.Tests.csproj -c Release --no-build
+
+      - name: Publish self-contained
+        run: |
+          dotnet publish src\Keyvora\Keyvora.Desktop\Keyvora.Desktop.csproj `
+            -c Release `
+            --no-build `
+            -o publish\Keyvora
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Keyvora
+          path: publish\Keyvora\
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Keyvora
+          path: Keyvora
+
+      - name: Zip for release
+        run: zip -r Keyvora.zip Keyvora/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Keyvora.zip
+          generate_release_notes: true
