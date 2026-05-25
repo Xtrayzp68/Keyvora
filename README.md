@@ -1,5 +1,8 @@
 # Custom Mini Keyvora
 
+![Build](https://github.com/Xtrayzp68/Keyvora/actions/workflows/build.yml/badge.svg)
+[![Download Latest](https://img.shields.io/github/v/release/Xtrayzp68/Keyvora?label=Download)](https://github.com/Xtrayzp68/Keyvora/releases/latest)
+
 A custom 6-button USB mini Keyvora powered by an ATmega32U4 (Arduino Pro Micro) with a modern C# / WPF desktop application.
 
 ## Features
@@ -55,6 +58,12 @@ Select board: **Arduino Micro** (ATmega32U4).
 Upload at 115200 baud.
 
 ### Desktop App
+
+**Option 1 — Télécharger le .exe pré-build**  
+Le dernier `.exe` est buildé automatiquement par GitHub Actions à chaque push.  
+Va sur [Actions](https://github.com/Xtrayzp68/Keyvora/actions) ou [Releases](https://github.com/Xtrayzp68/Keyvora/releases/latest) pour le télécharger.
+
+**Option 2 — Builder soi-même**
 
 Requires .NET 8 SDK.
 
