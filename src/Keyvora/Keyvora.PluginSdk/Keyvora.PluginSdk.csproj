@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Keyvora.PluginSdk</RootNamespace>
+    <AssemblyName>Keyvora.PluginSdk</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>SDK for building plugins for Keyvora Desktop</Description>
+  </PropertyGroup>
+
+</Project>

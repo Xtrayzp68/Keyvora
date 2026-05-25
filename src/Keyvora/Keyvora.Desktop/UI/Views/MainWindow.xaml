@@ -1,0 +1,242 @@
+<Window x:Class="Keyvora.Desktop.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:viewmodels="clr-namespace:Keyvora.Desktop.UI.ViewModels"
+        xmlns:controls="clr-namespace:Keyvora.Desktop.UI.Controls"
+        xmlns:converters="clr-namespace:Keyvora.Desktop.UI.Converters"
+        x:Name="MainWindowRoot"
+        Title="Keyvora"
+        Width="480"
+        Height="520"
+        MinWidth="380"
+        MinHeight="440"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <converters:ActionTypeToIconConverter x:Key="IconConverter"/>
+    </Window.Resources>
+
+        <shell:WindowChrome.WindowChrome>
+            <shell:WindowChrome CaptionHeight="40"
+                                GlassFrameThickness="0"
+                                ResizeBorderThickness="4"
+                                CornerRadius="0"/>
+        </shell:WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            Background="{StaticResource BackgroundBrush}">
+        <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <!-- Title Bar -->
+            <RowDefinition Height="40"/>
+            <!-- Profile Bar -->
+            <RowDefinition Height="40"/>
+            <!-- Button Grid -->
+            <RowDefinition Height="*"/>
+            <!-- Status Bar -->
+            <RowDefinition Height="32"/>
+        </Grid.RowDefinitions>
+
+        <!-- ==================== TITLE BAR ==================== -->
+        <Border Grid.Row="0"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="12,0,12,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="⚡" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Keyvora" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource SecondaryButton}"
+                            Content="🔌"
+                            FontSize="14"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Margin="0,0,6,0"
+                            Command="{Binding OpenPluginsCommand}"
+                            ToolTip="Plugins (Spotify, Streamlabs)"/>
+                    <Button Style="{StaticResource SecondaryButton}"
+                            Content="⚙"
+                            FontSize="14"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Margin="0,0,6,0"
+                            Command="{Binding OpenSettingsCommand}"
+                            ToolTip="Settings"/>
+                    <Button Style="{StaticResource SecondaryButton}"
+                            Content="⊞"
+                            FontSize="14"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Command="{Binding ConfigureGridCommand}"
+                            ToolTip="Configurer la grille"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ==================== PROFILE BAR ==================== -->
+        <Border Grid.Row="1"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="4,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ScrollViewer Grid.Column="0"
+                              x:Name="ProfileTabScroll"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Hidden"
+                              CanContentScroll="True"
+                              PreviewMouseWheel="OnProfileTabPreviewMouseWheel">
+                    <ItemsControl x:Name="ProfileTabItemsControl"
+                                      ItemsSource="{Binding ProfileSelector.Profiles}"
+                                      PreviewMouseLeftButtonDown="OnProfileTabPreviewMouseDown"
+                                      PreviewMouseMove="OnProfileTabPreviewMouseMove"
+                                      PreviewMouseLeftButtonUp="OnProfileTabPreviewMouseUp">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="viewmodels:ProfileItem">
+                                <Button Content="{Binding Name}"
+                                        Command="{Binding DataContext.ProfileSelector.SelectProfileCommand,
+                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource ProfileTabStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Button.ContextMenu>
+                                        <ContextMenu Background="{StaticResource SurfaceBrush}"
+                                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                                     BorderBrush="{StaticResource BorderBrush}"
+                                                     BorderThickness="1">
+                                            <MenuItem Header="Renommer"
+                                                      Command="{Binding DataContext.ProfileSelector.RenameProfileCommand,
+                                                          Source={x:Reference MainWindowRoot}}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="Supprimer"
+                                                      Command="{Binding DataContext.ProfileSelector.DeleteProfileCommand,
+                                                          Source={x:Reference MainWindowRoot}}"
+                                                      CommandParameter="{Binding}"/>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource SecondaryButton}"
+                        Content="✚"
+                        FontSize="16"
+                        Padding="6,4"
+                        Margin="4,0,0,0"
+                        Command="{Binding AddProfileCommand}"
+                        ToolTip="Add Profile"/>
+            </Grid>
+        </Border>
+
+        <!-- ==================== BUTTON GRID ==================== -->
+        <Border Grid.Row="2"
+                Background="{StaticResource BackgroundBrush}"
+                Padding="16">
+            <ItemsControl x:Name="ButtonGridItemsControl"
+                          ItemsSource="{Binding ButtonGrid.Buttons}"
+                          Loaded="OnButtonGridLoaded">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid x:Name="ButtonGridPanel" Columns="3" Rows="2"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="viewmodels:ButtonViewModel">
+                        <controls:KeyvoraButton
+                            DataContext="{Binding}"
+                            Margin="8"
+                            AllowDrop="True"
+                            Drop="OnButtonDrop"
+                            DragOver="OnButtonDragOver"
+                            DragLeave="OnButtonDragLeave"
+                            PreviewMouseLeftButtonDown="OnButtonPreviewMouseDown"
+                            PreviewMouseLeftButtonUp="OnButtonPreviewMouseUp"
+                            MouseDoubleClick="OnButtonMouseDoubleClick"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <!-- ==================== STATUS BAR ==================== -->
+        <Border Grid.Row="3"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="12,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Device status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="8" Height="8" Margin="0,0,6,0">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsDeviceConnected,
+                                Converter={x:Null}, FallbackValue=#F44336}"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <TextBlock Text="{Binding DeviceStatus}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource SecondaryButton}"
+                            Content="⟳"
+                            FontSize="12"
+                            Padding="4,2"
+                            Margin="6,0,0,0"
+                            Command="{Binding RefreshDeviceCommand}"
+                            ToolTip="Rechercher le port COM Arduino"/>
+                </StackPanel>
+
+                <!-- Current track / Spotify -->
+                <TextBlock Grid.Column="2"
+                           Text="{Binding CurrentTrack}"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           FontSize="11"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           MaxWidth="240"/>
+            </Grid>
+        </Border>
+        </Grid>
+    </Border>
+</Window>
